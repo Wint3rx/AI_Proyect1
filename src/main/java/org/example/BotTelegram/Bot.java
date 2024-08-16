@@ -1,10 +1,17 @@
 package org.example.BotTelegram;
+
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+
 public class Bot extends TelegramLongPollingBot {
+
     @Override
     public String getBotUsername() {
         return "@WinterSoldi3rBot";
@@ -12,47 +19,83 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        return "7407523638:AAEJ4Mhi4hUBhf2q9G9Qu7LAh7UskX-hN50";
+        // Es recomendable leer el token de una variable de entorno o archivo de configuración
+        return System.getenv("TELEGRAM_BOT_TOKEN");
     }
-
-
-
-    //El método onUpdateReceived(Update update) de la clase Bot se usa para manejar todas las actualizaciones que el
-    // bot recibe.
-    // Dependiendo del tipo de actualización, se toman diferentes acciones.
 
     @Override
     public void onUpdateReceived(Update update) {
-        //obtener informacion de la persona que manda los mensajes
-        String nombre = update.getMessage().getFrom().getFirstName();
-        String apellido = update.getMessage().getFrom().getLastName();
-        String nickName = update.getMessage().getFrom().getUserName();
-
-        //Se verifica si la actualización contiene un mensaje y si ese mensaje tiene texto.
-        //Luego se procesa el contenido del mensaje y se responde según el caso.
         if (update.hasMessage() && update.getMessage().hasText()) {
-            System.out.println("Hola "+nickName+" tu apellido es: "+apellido+" tu nombre es: "+nombre);
-            String message_text = update.getMessage().getText();
-            long chat_id = update.getMessage().getChatId();
+            String messageText = update.getMessage().getText();
+            long chatId = update.getMessage().getChatId();
 
-            //manejo de mensajes
-            if(message_text.toLowerCase().equals("hola")){
-                sendText(chat_id,"🙌 Hola "+nickName+" un gusto saludarte 😊 ");
+            switch (messageText.split(" ")[0].toLowerCase()) {
+                case "/info":
+                    sendText(chatId, "Información personal:\nCarnet: 0905-23-4498\nNombre: Franklin Boanerges Lopez Chavarria\nSemestre: Cuarto Semestre");
+                    break;
+                case "/progra":
+                    sendText(chatId, "La clase de programación es muy interesante y me gusta mucho.");
+                    break;
+                case "/hola":
+                    sendGreeting(chatId, update);
+                    break;
+                case "/cambio":
+                    handleCurrencyExchange(chatId, messageText);
+                    break;
+                case "/grupal":
+                    handleGroupMessage(messageText);
+                    break;
+                default:
+                    sendText(chatId, "Comando no reconocido.");
             }
-            System.out.println("User id: " + chat_id + " Message: " + message_text);
 
+            System.out.printf("User id: %d, Message: %s%n", chatId, messageText);
         }
     }
 
+    private void sendGreeting(long chatId, Update update) {
+        String nombre = update.getMessage().getFrom().getFirstName();
+        SimpleDateFormat sdf = new SimpleDateFormat("EEEE dd 'de' MMMM", new Locale("es", "ES"));
+        String fecha = sdf.format(new Date());
 
-    public void sendText(Long who, String what){
+        String greeting = "Hola, " + nombre + ", hoy es " + fecha + ".";
+        sendText(chatId, greeting);
+    }
+
+    private void handleCurrencyExchange(long chatId, String messageText) {
+        String[] parts = messageText.split(" ");
+        if (parts.length == 2) {
+            try {
+                double euros = Double.parseDouble(parts[1]);
+                double rate = 8.49;
+                double quetzales = euros * rate;
+                sendText(chatId, "Son " + quetzales + " quetzales.");
+            } catch (NumberFormatException e) {
+                sendText(chatId, "Por favor, envíe un valor numérico válido.");
+            }
+        } else {
+            sendText(chatId, "Formato incorrecto. Usa /cambio [monto]");
+        }
+    }
+
+    private void handleGroupMessage(String messageText) {
+        List<Long> chatIds = List.of(6709392176L, 6922425377L, 6710213754L, 6957944438L);
+        String message = messageText.substring(messageText.indexOf(" ") + 1);
+
+        for (Long id : chatIds) {
+            sendText(id, message);
+        }
+    }
+
+    public void sendText(Long who, String what) {
         SendMessage sm = SendMessage.builder()
-                .chatId(who.toString()) //Who are we sending a message to
-                .text(what).build();    //Message content
+                .chatId(who.toString())
+                .text(what)
+                .build();
         try {
-            execute(sm);                        //Actually sending the message
+            execute(sm);
         } catch (TelegramApiException e) {
-            throw new RuntimeException(e);      //Any error will be printed here
+            throw new RuntimeException(e);
         }
     }
 }
