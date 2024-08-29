@@ -1,4 +1,4 @@
-package org.example.BotTelegram;
+package umg.principal.BotTelegram;
 import org.json.JSONObject;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;

@@ -1,4 +1,4 @@
-package org.example.BotTelegram;
+package umg.principal.BotTelegram;
 
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -19,8 +19,7 @@ public class Bot extends TelegramLongPollingBot {
 
     @Override
     public String getBotToken() {
-        // Es recomendable leer el token de una variable de entorno o archivo de configuración
-        return System.getenv("TELEGRAM_BOT_TOKEN");
+        return ("7407523638:AAEJ4Mhi4hUBhf2q9G9Qu7LAh7UskX-hN50");
     }
 
     @Override
